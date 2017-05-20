@@ -1,0 +1,20 @@
+function replace_factors(number: Int) result: Int =
+    if number == 0:
+        result = 0
+    elseif number % 2 == 0:
+        result = 3 * this(number / 2)
+    else:
+        result = number
+
+print#replace_factors(0)
+print#replace_factors(1)
+print#replace_factors(2)
+print#replace_factors(3)
+print#replace_factors(4)
+print#replace_factors(5)
+print#replace_factors(6)
+print#replace_factors(7)
+print#replace_factors(8)
+print#replace_factors(9)
+print#replace_factors(10)
+print#replace_factors(11)

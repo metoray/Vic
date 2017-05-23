@@ -3,7 +3,7 @@ import typetraits
 import strutils
 
 type
-    TokenKind = enum
+    TokenKind* = enum
         tkUnknown
         tkEOF
         tkWhitespace
@@ -25,18 +25,18 @@ type
         tkGate
 
     Token* = ref object of RootObj
-        case kind: TokenKind
-        of tkIdentifier: name: string
-        of tkNumber: number: string
-        of tkWhitespace: len: int
-        of tkOperator: op: char
+        case kind*: TokenKind
+        of tkIdentifier: name*: string
+        of tkNumber: number*: string
+        of tkWhitespace: len*: int
+        of tkOperator: op*: char
         else: discard
 
     TokenParser = tuple
         pattern: Regex
         factory: proc(match: RegexMatch): Token
 
-proc `$`(token: Token): string =
+proc `$`*(token: Token): string =
     result = case token.kind
     of tkIdentifier: "$#($#)" % [$token.kind, token.name]
     of tkWhitespace: "$#($#)" % [$token.kind, $token.len]
@@ -120,7 +120,6 @@ proc firstToken(s: var string): tuple[token: Token, slice: Slice[int]] =
         if match.isSome:
             token = parser.factory(match.get)
             slice = match.get.matchbounds
-            echo slice
             break
     return (token, slice)
 
@@ -129,16 +128,12 @@ proc popToken(s: var string): Token =
     s.delete(foundToken.slice.a, foundToken.slice.b)
     return foundToken.token
 
-var s = readFile("threesequence.vic0")
+proc getTokens*(s: var string): seq[Token] =
+    result = @[]
 
-var tokens: seq[Token] = @[]
+    while true:
+        var t = s.popToken
+        result.add(t)
+        if t.kind == tkEOF:
+            break
 
-while true:
-    var t = s.popToken
-    tokens.add(t)
-    if t.kind == tkEOF:
-        break
-
-echo tokens
-
-echo "==== DONE! ===="

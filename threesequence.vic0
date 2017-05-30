@@ -1,4 +1,4 @@
-function replace_factors(number: Int) result: Int =
+def function replace_factors(number: Int) result: Int =
     if number == 0:
         result = 0
     elseif number % 2 == 0:

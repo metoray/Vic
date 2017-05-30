@@ -14,6 +14,7 @@ type
         tkElseKW
         tkElseIfKW
         tkThisKW
+        tkDefKW
         tkOpenParen
         tkCloseParen
         tkComma
@@ -28,7 +29,7 @@ type
         case kind*: TokenKind
         of tkIdentifier: name*: string
         of tkNumber: number*: string
-        of tkWhitespace: len*: int
+        of tkNewLine: indent*: int
         of tkOperator: op*: char
         else: discard
 
@@ -39,7 +40,7 @@ type
 proc `$`*(token: Token): string =
     result = case token.kind
     of tkIdentifier: "$#($#)" % [$token.kind, token.name]
-    of tkWhitespace: "$#($#)" % [$token.kind, $token.len]
+    of tkNewLine: "$#($#)" % [$token.kind, $token.indent]
     of tkOperator: "$#($#)" % [$token.kind, $token.op]
     of tkNumber: "$#($#)" % [$token.kind, $token.number]
     else: $token.kind
@@ -56,6 +57,7 @@ let tokenlist: seq[TokenParser] = @[
             of "else": Token(kind: tkElseKW)
             of "elseif": Token(kind: tkElseIfKW)
             of "this": Token(kind: tkThisKW)
+            of "def": Token(kind: tkDefKW)
             else: Token(kind: tkIdentifier, name: match.captures[0])
     ),
     (
@@ -64,16 +66,12 @@ let tokenlist: seq[TokenParser] = @[
             Token(kind: tkNumber, number: match.captures[0])
     ),
     (
-        re" +", proc(match: RegexMatch) : Token{.closure.} =
-            Token(kind: tkWhitespace, len: match.matchbounds.len)
+        re"((?: |\t|\\\n)+)", proc(match: RegexMatch) : Token{.closure.} =
+            Token(kind: tkWhitespace)
     ),
     (
-        re"\\\n", proc(match: RegexMatch) : Token{.closure.} =
-            Token(kind: tkWhitespace, len: match.matchbounds.len)
-    ),
-    (
-        re"[\n;]", proc(match: RegexMatch) : Token{.closure.} =
-            Token(kind: tkNewLine)
+        re"\n((?: |\t)*)", proc(match: RegexMatch) : Token{.closure.} =
+            Token(kind: tkNewLine, indent: match.matchbounds.len - 1)
     ),
     (
         re"\(", proc(match: RegexMatch) : Token{.closure.} =
